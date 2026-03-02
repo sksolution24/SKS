@@ -327,38 +327,7 @@
 
 
  
-<!-- Testimonial Start -->
-<div class="container-fluid testimonial py-5 my-5">
-  <div class="container py-5">
-    <div class="text-center mx-auto pb-5" style="max-width: 600px;">
-      <h5 class="text-primary">Our Testimonial</h5>
-      <h1>Our Client Saying!</h1>
-    </div>
-    <div class="owl-carousel testimonial-carousel"></div>
-  </div>
-</div>
-<!-- Testimonial End -->
 
-<!-- Review Form -->
-<div class="container my-5">
-  <h3 class="text-center">Leave a Review</h3>
-  <form id="reviewForm" method="POST" enctype="multipart/form-data">
-    <input type="text" id="name" name="name" placeholder="Your Name" required><br><br>
-    <input type="text" id="profession" name="profession" placeholder="Profession"><br><br>
-    <select id="rating" name="rating" required>
-      <option value="5">★★★★★</option>
-      <option value="4">★★★★☆</option>
-      <option value="3">★★★☆☆</option>
-      <option value="2">★★☆☆☆</option>
-      <option value="1">★☆☆☆☆</option>
-    </select><br><br>
-    <textarea id="review" name="review" placeholder="Your Review" required></textarea><br><br>
-    <input type="file" id="photo" name="photo" accept="image/*"><br><br>
-    <button type="submit">Submit Review</button>
-  </form>
-</div>
-
-<!-- Review Form -->
 
 
         <!-- Footer Start -->
@@ -438,72 +407,7 @@
 
         <script src="script.js"></script>
 
-<script>
 
-document.getElementById("reviewForm").addEventListener("submit", function(e) {
-  e.preventDefault();
-
-  const formData = new FormData(this);
-
-  fetch("submit-review.php", {
-    method: "POST",
-    body: formData
-  })
-  .then(res => res.json())
-  .then(data => {
-    console.log(data); // Debug
-    if (data.success) {
-      alert("Review submitted successfully!");
-      loadReviews();
-      this.reset();
-    } else {
-      alert("Error: " + data.error);
-    }
-  })
-  .catch(err => console.error("Fetch error:", err));
-});
-
-function loadReviews() {
-  fetch("get-reviews.php")
-    .then(res => res.json())
-    .then(reviews => {
-      const carousel = document.querySelector(".testimonial-carousel");
-      carousel.innerHTML = "";
-
-      reviews.forEach(r => {
-        let stars = "";
-        for (let i = 0; i < r.rating; i++) {
-          stars += `<i class="fas fa-star me-1 text-primary"></i>`;
-        }
-        for (let i = r.rating; i < 5; i++) {
-          stars += `<i class="far fa-star me-1 text-primary"></i>`;
-        }
-
-        const item = `
-          <div class="testimonial-item border p-4">
-            <div class="d-flex align-items-center">
-              <div class="">
-                <img src="${r.photo}" alt="Customer testimonial" style="width:80px;height:80px;object-fit:cover;border-radius:50%;">
-              </div>
-              <div class="ms-4">
-                <h4 class="text-secondary">${r.name}</h4>
-                <p class="m-0 pb-3">${r.profession || ""}</p>
-                <div class="d-flex pe-5">${stars}</div>
-              </div>
-            </div>
-            <div class="border-top mt-4 pt-3">
-              <p class="mb-0">${r.review}</p>
-            </div>
-          </div>`;
-        
-        carousel.innerHTML += item;
-      });
-    });
-}
-
-window.onload = loadReviews;
-
-</script>
 
 
     </body>
