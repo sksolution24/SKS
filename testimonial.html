@@ -454,10 +454,16 @@
 
         <!-- Review System Script -->
         <script>
+            let carouselInitialized = false;
+            
             // Initialize review system
             document.addEventListener('DOMContentLoaded', function() {
-                initializeReviewSystem();
-                loadReviewsFromStorage();
+                // Wait a bit for main.js carousel to initialize
+                setTimeout(function() {
+                    loadReviewsFromStorage();
+                    reinitializeCarousel();
+                    initializeReviewSystem();
+                }, 500);
             });
 
             function initializeReviewSystem() {
@@ -531,12 +537,10 @@
                     
                     alert('Thank you! Your review has been submitted successfully.');
                     
-                    // Reinitialize carousel if needed
-                    if (jQuery && jQuery('.owl-carousel').data('owl.carousel')) {
-                        jQuery('.testimonial-carousel').trigger('destroy.owl.carousel').removeClass('owl-loaded');
-                        jQuery('.testimonial-carousel').find('.owl-stage-outer').children(':nth-child(n)').unwrap();
-                        initializeCarousel();
-                    }
+                    // Reinitialize carousel with new item
+                    setTimeout(function() {
+                        reinitializeCarousel();
+                    }, 300);
                 });
             }
 
@@ -555,10 +559,10 @@
 
             function addReviewToCarousel(review) {
                 const carousel = document.querySelector('.testimonial-carousel');
-                const stars = review.rating;
+                const starsCount = review.rating;
                 let starsHTML = '';
                 for (let i = 1; i <= 5; i++) {
-                    starsHTML += `<i class="fas fa-star me-1 ${i <= stars ? 'text-primary' : 'text-muted'}"></i>`;
+                    starsHTML += `<i class="fas fa-star me-1 ${i <= starsCount ? 'text-primary' : 'text-muted'}"></i>`;
                 }
                 
                 const reviewHTML = `
@@ -590,20 +594,44 @@
                 return div.innerHTML;
             }
 
-            function initializeCarousel() {
-                jQuery('.testimonial-carousel').owlCarousel({
+            function reinitializeCarousel() {
+                const carousel = jQuery('.testimonial-carousel');
+                
+                // Check if carousel already has owl-carousel initialized
+                if (carousel.hasClass('owl-loaded')) {
+                    // Destroy existing carousel
+                    carousel.trigger('destroy.owl.carousel');
+                    carousel.removeClass('owl-loaded');
+                    
+                    // Remove owl DOM elements
+                    carousel.find('.owl-stage-outer').children().unwrap();
+                    carousel.find('.owl-controls').remove();
+                }
+                
+                // Reinitialize carousel with all items
+                carousel.owlCarousel({
                     items: 1,
                     loop: true,
                     margin: 20,
                     responsive: {
-                        0: { items: 1 },
-                        768: { items: 2 },
-                        1200: { items: 3 }
+                        0: {
+                            items: 1
+                        },
+                        768: {
+                            items: 2
+                        },
+                        1200: {
+                            items: 3
+                        }
                     },
                     autoplay: true,
                     autoplayTimeout: 5000,
-                    autoplayHoverPause: true
+                    autoplayHoverPause: true,
+                    nav: false,
+                    dots: true
                 });
+                
+                carouselInitialized = true;
             }
         </script>
 
