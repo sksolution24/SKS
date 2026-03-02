@@ -68,6 +68,117 @@ If you want to use a server-side database instead of localStorage, modify the fo
 - `saveReviewToStorage(review)` - Change to send data to backend API
 - `loadReviewsFromStorage()` - Change to fetch data from backend API
 
+#### Using Google Sheets
+You can use a Google Sheet as a lightweight shared datastore by exposing it via one of the following methods:
+
+1. **Google Apps Script Web App**
+   - Create a new Google Sheet and open **Extensions > Apps Script**.
+   - Write a script with `doGet(e)`/`doPost(e)` handlers that read/write rows.
+   - Deploy the script as a *web app* and grant access to **Anyone, even anonymous**.
+   - In the review JS, use `fetch()` to POST new reviews to the web app URL and GET the sheet contents. The sheet rows act as your review records.
+   - Example POST in JS:
+     ```js
+     function saveReviewToStorage(review) {
+       return fetch(webAppUrl, {
+         method: 'POST',
+         headers: { 'Content-Type': 'application/json' },
+         body: JSON.stringify(review)
+       });
+     }
+     ```
+   - GET the reviews during load with `fetch(webAppUrl + '?action=list')` and append results.
+   - Make sure to convert sheet rows to the same object structure and back.
+
+2. **Third‑party wrappers** (SheetDB, Sheety, etc.)
+   - Sign up for a service that turns a sheet into a REST API.
+   - Configure the service to point at your Google Sheet.
+   - Use the provided API endpoint exactly like a normal backend in the JS code above.
+
+> **Notes:**
+> - Google Sheets is free and quick to set up, but not designed for high traffic.
+> - There is a limit on read/write operations (per user and per minute) and the web app may take a second or two to respond.
+> - All clients will see updates as soon as they reload or if you poll for changes; for real‑time push you'd still need web sockets or a refresh mechanism.
+
+After implementing either method, update the `saveReviewToStorage`/`loadReviewsFromStorage` functions in `review-system.js` to call the sheet API instead of `localStorage`.  Replace the current storage section of the docs with this information.
+
+### Using Firebase as the Backend
+If you prefer a more robust real-time solution without managing a server, Firebase is a great choice. Here's how to adapt the review system:
+
+1. **Create a Firebase Project:**
+   - Go to the [Firebase console](https://console.firebase.google.com) and create a new project.
+   - Enable **Firestore** (or Realtime Database) in test mode for rapid prototyping.
+
+2. **Add Firebase SDK to HTML pages:**
+   ```html
+   <!-- Add these before other scripts -->
+   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+   <script>
+     const firebaseConfig = {
+       apiKey: "...",
+       authDomain: "...",
+       projectId: "...",
+       // other values from your console
+     };
+     firebase.initializeApp(firebaseConfig);
+     const db = firebase.firestore();
+   </script>
+   ```
+
+3. **Modify storage functions in `review-system.js`:**
+   ```js
+   function saveReviewToStorage(review) {
+     // return promise for chaining
+     return db.collection('reviews').add(review);
+   }
+
+   function loadReviewsFromStorage() {
+     // realtime listener
+     db.collection('reviews').orderBy('timestamp')
+       .onSnapshot(snapshot => {
+         // clear existing carousel items first if desired
+         snapshot.docChanges().forEach(change => {
+           if (change.type === 'added') {
+             addReviewToCarousel(change.doc.data());
+           } else if (change.type === 'removed') {
+             // remove from DOM using timestamp or id
+             removeReview(change.doc.id);
+           }
+         });
+       });
+   }
+   ```
+   - Store `review.timestamp` as a Firestore field. You may also store `id` using `doc.id` if needed.
+
+4. **Handle deletion:**
+   ```js
+   function removeReview(id) {
+     db.collection('reviews').doc(id).delete();
+   }
+   ```
+   - Update `addReviewToCarousel` to save the document ID in the element (e.g. `data-id="${reviewId}"`).
+
+5. **Realtime updates:**
+   - Because the listener is active, any new review submitted from any client will pop into every open page automatically without reload.
+   - Deletions propagate as well.
+
+6. **Security rules (important before production):**
+   - In the Firebase console, set Firestore rules to restrict who can write or delete. For example:
+     ```
+     rules_version = '2';
+     service cloud.firestore {
+       match /databases/{database}/documents {
+         match /reviews/{review} {
+           allow read: if true;
+           allow write: if request.time < timestamp.date(2026, 12, 31);
+         }
+       }
+     }
+     ```
+     (Change to appropriate conditions.)
+
+This Firebase setup provides a scalable, instant synchronization layer so that all visitors—across devices and tabs—see submitted reviews in real time.
+
 ### To Change Default Avatar:
 Update the image path in the `addReviewToCarousel()` function:
 ```javascript
