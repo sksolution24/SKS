@@ -46,32 +46,45 @@ function initializeReviewSystem() {
             email: document.getElementById('reviewEmail').value,
             rating: parseInt(rating),
             text: document.getElementById('reviewText').value,
-            timestamp: new Date().toISOString()
-        };
-        saveReviewToStorage(review);
-        addReviewToCarousel(review);
-        form.reset();
-        document.getElementById('selectedRating').value = 0;
-        stars.forEach(s => s.style.color = '#ddd');
-        alert('Thank you! Your review has been submitted successfully.');
-        setTimeout(reinitializeCarousel, 300);
+            // timestamp will be set in saveReviewToStorage using serverTimestamp()
+        }; 
+        // save to Firestore and add when written
+        saveReviewToStorage(review).then(docRef => {
+            addReviewToCarousel(review, docRef.id);
+            // reset visuals
+            form.reset();
+            document.getElementById('selectedRating').value = 0;
+            stars.forEach(s => s.style.color = '#ddd');
+            alert('Thank you! Your review has been submitted successfully.');
+            setTimeout(reinitializeCarousel, 300);
+        }).catch(err => {
+            console.error('Error saving review', err);
+            alert('Failed to submit review. Please try again later.');
+        });
     });
 }
 
 function saveReviewToStorage(review) {
-    let reviews = JSON.parse(localStorage.getItem('customerReviews')) || [];
-    reviews.push(review);
-    localStorage.setItem('customerReviews', JSON.stringify(reviews));
+    // use Firestore server timestamp for consistency
+    review.timestamp = firebase.firestore.FieldValue.serverTimestamp();
+    return db.collection('reviews').add(review);
 }
 
 function loadReviewsFromStorage() {
-    const reviews = JSON.parse(localStorage.getItem('customerReviews')) || [];
-    reviews.forEach(review => {
-        addReviewToCarousel(review);
+  db.collection('reviews').orderBy('timestamp')
+    .onSnapshot(snapshot => {
+      snapshot.docChanges().forEach(change => {
+        if (change.type === 'added') {
+          addReviewToCarousel(change.doc.data(), change.doc.id);
+        } else if (change.type === 'removed') {
+          removeReview(change.doc.id);
+        }
+      });
     });
 }
 
-function addReviewToCarousel(review) {
+
+function addReviewToCarousel(review, docId) {
     const carousel = document.querySelector('.testimonial-carousel');
     if (!carousel) return;
     const starsCount = review.rating;
@@ -80,10 +93,10 @@ function addReviewToCarousel(review) {
         starsHTML += `<i class="fas fa-star me-1 ${i <= starsCount ? 'text-primary' : 'text-muted'}"></i>`;
     }
     const reviewHTML = `
-        <div class="testimonial-item border p-4 position-relative" data-ts="${review.timestamp}">
+        <div class="testimonial-item border p-4 position-relative" data-id="${docId}">
             <i class="fas fa-trash-alt remove-review text-danger" 
                style="position:absolute; top:10px; right:10px; cursor:pointer;" 
-               data-ts="${review.timestamp}" title="Delete review"></i>
+               data-id="${docId}" title="Delete review"></i>
             <div class="d-flex align-items-center">
                 <div class="">
                     <img src="img/default-user.jpg" alt="Customer avatar" style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover;">
@@ -108,18 +121,18 @@ function addReviewToCarousel(review) {
         const btn = added.querySelector('.remove-review');
         if (btn) {
             btn.addEventListener('click', function() {
-                const ts = this.getAttribute('data-ts');
-                removeReview(ts);
+                const id = this.getAttribute('data-id');
+                removeReview(id);
             });
         }
     }
 }
 
-function removeReview(timestamp) {
-    let reviews = JSON.parse(localStorage.getItem('customerReviews')) || [];
-    reviews = reviews.filter(r => r.timestamp !== timestamp);
-    localStorage.setItem('customerReviews', JSON.stringify(reviews));
-    const item = document.querySelector(`.testimonial-item[data-ts="${timestamp}"]`);
+function removeReview(id) {
+    // delete from Firestore
+    db.collection('reviews').doc(id).delete();
+    // remove from DOM if present
+    const item = document.querySelector(`.testimonial-item[data-id="${id}"]`);
     if (item) item.parentElement.removeChild(item);
     setTimeout(reinitializeCarousel, 200);
 }

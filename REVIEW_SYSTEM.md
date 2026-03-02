@@ -163,19 +163,19 @@ If you prefer a more robust real-time solution without managing a server, Fireba
    - Deletions propagate as well.
 
 6. **Security rules (important before production):**
-   - In the Firebase console, set Firestore rules to restrict who can write or delete. For example:
+   - In the Firebase console, set Firestore rules to restrict who can write or delete. Example for logged-in users only:
      ```
      rules_version = '2';
      service cloud.firestore {
        match /databases/{database}/documents {
          match /reviews/{review} {
            allow read: if true;
-           allow write: if request.time < timestamp.date(2026, 12, 31);
+           allow write: if request.auth != null; // only logged-in users
          }
        }
      }
      ```
-     (Change to appropriate conditions.)
+   - Adjust the conditions to suit your needs (e.g. admin-only deletes, time limits, etc.).
 
 This Firebase setup provides a scalable, instant synchronization layer so that all visitors—across devices and tabs—see submitted reviews in real time.
 
