@@ -519,6 +519,7 @@
                     }
                     
                     const review = {
+                        id: Date.now(), // unique identifier
                         name: document.getElementById('reviewName').value,
                         profession: document.getElementById('reviewProfession').value,
                         email: document.getElementById('reviewEmail').value,
