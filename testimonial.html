@@ -320,7 +320,38 @@
 
 
  
+<!-- Testimonial Start -->
+<div class="container-fluid testimonial py-5 my-5">
+  <div class="container py-5">
+    <div class="text-center mx-auto pb-5" style="max-width: 600px;">
+      <h5 class="text-primary">Our Testimonial</h5>
+      <h1>Our Client Saying!</h1>
+    </div>
+    <div class="owl-carousel testimonial-carousel"></div>
+  </div>
+</div>
+<!-- Testimonial End -->
 
+<!-- Review Form -->
+<div class="container my-5">
+  <h3 class="text-center">Leave a Review</h3>
+  <form id="reviewForm" method="POST" enctype="multipart/form-data">
+    <input type="text" id="name" name="name" placeholder="Your Name" required><br><br>
+    <input type="text" id="profession" name="profession" placeholder="Profession"><br><br>
+    <select id="rating" name="rating" required>
+      <option value="5">★★★★★</option>
+      <option value="4">★★★★☆</option>
+      <option value="3">★★★☆☆</option>
+      <option value="2">★★☆☆☆</option>
+      <option value="1">★☆☆☆☆</option>
+    </select><br><br>
+    <textarea id="review" name="review" placeholder="Your Review" required></textarea><br><br>
+    <input type="file" id="photo" name="photo" accept="image/*"><br><br>
+    <button type="submit">Submit Review</button>
+  </form>
+</div>
+
+<!-- Review Form -->
 
 
         <!-- Footer Start -->
@@ -397,6 +428,8 @@
 
         <!-- Template Javascript -->
         <script src="js/main.js"></script>
+
+        <script src="script.js"></script>
 
 
 
