@@ -320,7 +320,7 @@
 
 <!-- Review System Start -->
 
-<form id="reviewForm" enctype="multipart/form-data">
+<form id="reviewForm" method="POST" enctype="multipart/form-data">
   <div class="mb-3">
     <label for="name" class="form-label">Your Name</label>
     <input type="text" class="form-control" id="name" required>
@@ -431,8 +431,9 @@
         <script src="js/main.js"></script>
 
 <script>
-        document.getElementById("reviewForm").addEventListener("submit", function(e) {
-  e.preventDefault();
+
+    
+        document.getElementById("reviewForm").addEventListener("submit", function(e) {e.preventDefault();
 
   const formData = new FormData();
   formData.append("name", document.getElementById("name").value);
@@ -452,10 +453,12 @@
       loadReviews();
       document.getElementById("reviewForm").reset();
     } else {
-      alert("Error submitting review");
+      alert("Error: " + data.error);
     }
-  });
+  })
+  .catch(err => console.error("Fetch error:", err));
 });
+
 
 function loadReviews() {
   fetch("get-reviews.php")
