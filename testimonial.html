@@ -315,6 +315,41 @@
 
         <!-- Testimonial End -->
 
+<!-- Review System Start -->
+
+<div class="container my-5">
+  <h3 class="text-center">Leave a Review</h3>
+  <form id="reviewForm">
+    <div class="mb-3">
+      <label for="name" class="form-label">Your Name</label>
+      <input type="text" class="form-control" id="name" required>
+    </div>
+    <div class="mb-3">
+      <label for="profession" class="form-label">Profession</label>
+      <input type="text" class="form-control" id="profession">
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Rating</label>
+      <select class="form-select" id="rating" required>
+        <option value="5">★★★★★</option>
+        <option value="4">★★★★☆</option>
+        <option value="3">★★★☆☆</option>
+        <option value="2">★★☆☆☆</option>
+        <option value="1">★☆☆☆☆</option>
+      </select>
+    </div>
+    <div class="mb-3">
+      <label for="review" class="form-label">Your Review</label>
+      <textarea class="form-control" id="review" rows="3" required></textarea>
+    </div>
+    <button type="submit" class="btn btn-primary">Submit Review</button>
+  </form>
+</div>
+
+<!-- Review System End -->
+ 
+
+
 
         <!-- Footer Start -->
          <div class="container-fluid footer bg-dark wow fadeIn" data-wow-delay=".3s">
