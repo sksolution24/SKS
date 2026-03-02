@@ -80,7 +80,15 @@ function loadReviewsFromStorage() {
           removeReview(change.doc.id);
         }
       });
+    }, error => {
+      console.error('Error loading reviews:', error);
     });
+  // initialize carousel after initial load
+  setTimeout(() => {
+    if (!carouselInitialized) {
+      reinitializeCarousel();
+    }
+  }, 1000);
 }
 
 
@@ -121,10 +129,9 @@ function addReviewToCarousel(review, docId) {
         const btn = added.querySelector('.remove-review');
         if (btn) {
             btn.addEventListener('click', function() {
-                const id = this.getAttribute('data-id');
-                removeReview(id);
-            });
-        }
+    // reinitialize carousel to include new item
+    if (carouselInitialized) {
+        reinitializeCarousel();
     }
 }
 
@@ -173,8 +180,8 @@ function reinitializeCarousel() {
 // page initialization
 document.addEventListener('DOMContentLoaded', function() {
     setTimeout(function() {
-        loadReviewsFromStorage();
-        reinitializeCarousel();
         initializeReviewSystem();
+        loadReviewsFromStorage();
+        // carousel will be initialized by the addReviewToCarousel callback
     }, 500);
 });
