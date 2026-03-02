@@ -754,3 +754,75 @@ button:hover {
 }
 
 /*** Footer End ***/
+
+/*** Review System Start ***/
+#reviewForm {
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    transition: 0.5s;
+}
+
+#reviewForm:hover {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+#reviewForm .form-control,
+#reviewForm .form-label {
+    border-color: #e0e0e0;
+    transition: 0.3s;
+}
+
+#reviewForm .form-control:focus {
+    border-color: var(--bs-primary);
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+#reviewForm .form-label {
+    color: #333;
+}
+
+.review-rating {
+    padding: 10px 0;
+}
+
+.star-icon {
+    transition: color 0.2s ease;
+}
+
+.star-icon:hover {
+    text-shadow: 0 0 10px rgba(13, 110, 253, 0.5);
+}
+
+#reviewForm .btn-primary {
+    background-color: var(--bs-primary);
+    border-color: var(--bs-primary);
+    transition: 0.5s;
+    font-size: 16px;
+    letter-spacing: 0.5px;
+}
+
+#reviewForm .btn-primary:hover {
+    background-color: var(--bs-secondary);
+    border-color: var(--bs-secondary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(30, 41, 59, 0.3);
+}
+
+.testimonial-item {
+    transition: 0.5s;
+    height: 100%;
+}
+
+.testimonial-item:hover {
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    transform: translateY(-5px);
+}
+
+.testimonial-item img {
+    transition: 0.3s;
+}
+
+.testimonial-item:hover img {
+    transform: scale(1.05);
+}
+
+/*** Review System End ***/
