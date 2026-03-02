@@ -320,34 +320,35 @@
 
 <!-- Review System Start -->
 
-<div class="container my-5">
-  <h3 class="text-center">Leave a Review</h3>
-  <form id="reviewForm">
-    <div class="mb-3">
-      <label for="name" class="form-label">Your Name</label>
-      <input type="text" class="form-control" id="name" required>
-    </div>
-    <div class="mb-3">
-      <label for="profession" class="form-label">Profession</label>
-      <input type="text" class="form-control" id="profession">
-    </div>
-    <div class="mb-3">
-      <label class="form-label">Rating</label>
-      <select class="form-select" id="rating" required>
-        <option value="5">★★★★★</option>
-        <option value="4">★★★★☆</option>
-        <option value="3">★★★☆☆</option>
-        <option value="2">★★☆☆☆</option>
-        <option value="1">★☆☆☆☆</option>
-      </select>
-    </div>
-    <div class="mb-3">
-      <label for="review" class="form-label">Your Review</label>
-      <textarea class="form-control" id="review" rows="3" required></textarea>
-    </div>
-    <button type="submit" class="btn btn-primary">Submit Review</button>
-  </form>
-</div>
+<form id="reviewForm" enctype="multipart/form-data">
+  <div class="mb-3">
+    <label for="name" class="form-label">Your Name</label>
+    <input type="text" class="form-control" id="name" required>
+  </div>
+  <div class="mb-3">
+    <label for="profession" class="form-label">Profession</label>
+    <input type="text" class="form-control" id="profession">
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Rating</label>
+    <select class="form-select" id="rating" required>
+      <option value="5">★★★★★</option>
+      <option value="4">★★★★☆</option>
+      <option value="3">★★★☆☆</option>
+      <option value="2">★★☆☆☆</option>
+      <option value="1">★☆☆☆☆</option>
+    </select>
+  </div>
+  <div class="mb-3">
+    <label for="review" class="form-label">Your Review</label>
+    <textarea class="form-control" id="review" rows="3" required></textarea>
+  </div>
+  <div class="mb-3">
+    <label for="photo" class="form-label">Upload Photo</label>
+    <input type="file" class="form-control" id="photo" accept="image/*">
+  </div>
+  <button type="submit" class="btn btn-primary">Submit Review</button>
+</form>
 
 <!-- Review System End -->
  
@@ -433,33 +434,82 @@
         document.getElementById("reviewForm").addEventListener("submit", function(e) {
   e.preventDefault();
 
-  const name = document.getElementById("name").value;
-  const profession = document.getElementById("profession").value;
-  const rating = document.getElementById("rating").value;
-  const review = document.getElementById("review").value;
+  const formData = new FormData();
+  formData.append("name", document.getElementById("name").value);
+  formData.append("profession", document.getElementById("profession").value);
+  formData.append("rating", document.getElementById("rating").value);
+  formData.append("review", document.getElementById("review").value);
+  formData.append("photo", document.getElementById("photo").files[0]);
 
-  const stars = "★".repeat(rating) + "☆".repeat(5 - rating);
-
-  const newReview = `
-    <div class="testimonial-item border p-4">
-      <div class="d-flex align-items-center">
-        <div class="ms-4">
-          <h4 class="text-secondary">${name}</h4>
-          <p class="m-0 pb-3">${profession}</p>
-          <div class="d-flex pe-5">${stars}</div>
-        </div>
-      </div>
-      <div class="border-top mt-4 pt-3">
-        <p class="mb-0">${review}</p>
-      </div>
-    </div>
-  `;
-
-  document.querySelector(".testimonial-carousel").innerHTML += newReview;
-
-  // Reset form
-  document.getElementById("reviewForm").reset();
+  fetch("submit-review.php", {
+    method: "POST",
+    body: formData
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      alert("Review submitted successfully!");
+      loadReviews();
+      document.getElementById("reviewForm").reset();
+    } else {
+      alert("Error submitting review");
+    }
+  });
 });
+
+function loadReviews() {
+  fetch("get-reviews.php")
+    .then(res => res.json())
+    .then(reviews => {
+      const carousel = document.querySelector(".testimonial-carousel");
+      carousel.innerHTML = "";
+
+      reviews.forEach(r => {
+        let stars = "";
+        for (let i = 0; i < r.rating; i++) {
+          stars += `<i class="fas fa-star me-1 text-primary"></i>`;
+        }
+        for (let i = r.rating; i < 5; i++) {
+          stars += `<i class="far fa-star me-1 text-primary"></i>`;
+        }
+
+        const item = `
+          <div class="testimonial-item border p-4">
+            <div class="d-flex align-items-center">
+              <div class="">
+                <img src="${r.photo}" alt="Customer testimonial" style="width:80px;height:80px;object-fit:cover;border-radius:50%;">
+              </div>
+              <div class="ms-4">
+                <h4 class="text-secondary">${r.name}</h4>
+                <p class="m-0 pb-3">${r.profession || ""}</p>
+                <div class="d-flex pe-5">${stars}</div>
+              </div>
+            </div>
+            <div class="border-top mt-4 pt-3">
+              <p class="mb-0">${r.review}</p>
+            </div>
+          </div>`;
+        
+        carousel.innerHTML += item;
+      });
+
+      // Reinitialize Owl Carousel
+      $('.testimonial-carousel').owlCarousel({
+        loop:true,
+        margin:30,
+        nav:false,
+        dots:true,
+        autoplay:true,
+        autoplayTimeout:5000,
+        responsive:{
+          0:{ items:1 },
+          768:{ items:2 },
+          992:{ items:3 }
+        }
+      });
+    });
+}
+
 
 </script>>
 
