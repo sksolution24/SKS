@@ -15,13 +15,52 @@ $rating = (int)$_POST['rating'];
 $review = htmlspecialchars($_POST['review']);
 
 $photoPath = "img/default-user.jpg"; // fallback
+
+// Handle photo upload + resize
 if (!empty($_FILES['photo']['name'])) {
     $targetFile = $uploadDir . time() . "_" . basename($_FILES["photo"]["name"]);
+
     if (move_uploaded_file($_FILES["photo"]["tmp_name"], $targetFile)) {
-        $photoPath = $targetFile;
+        // Resize image to 80x80
+        $resizedFile = $uploadDir . "thumb_" . time() . ".jpg";
+        resizeImage($targetFile, $resizedFile, 80, 80);
+        $photoPath = $resizedFile;
     }
 }
 
+// Function to resize image
+function resizeImage($sourceFile, $destFile, $width, $height) {
+    $info = getimagesize($sourceFile);
+    $mime = $info['mime'];
+
+    switch ($mime) {
+        case 'image/jpeg':
+            $image = imagecreatefromjpeg($sourceFile);
+            break;
+        case 'image/png':
+            $image = imagecreatefrompng($sourceFile);
+            break;
+        case 'image/gif':
+            $image = imagecreatefromgif($sourceFile);
+            break;
+        default:
+            return false;
+    }
+
+    $origWidth = imagesx($image);
+    $origHeight = imagesy($image);
+
+    $thumb = imagecreatetruecolor($width, $height);
+    imagecopyresampled($thumb, $image, 0, 0, 0, 0, $width, $height, $origWidth, $origHeight);
+
+    imagejpeg($thumb, $destFile, 85); // save compressed JPEG
+    imagedestroy($image);
+    imagedestroy($thumb);
+
+    return true;
+}
+
+// Load existing reviews
 $reviews = [];
 if (file_exists($file)) {
     $reviews = json_decode(file_get_contents($file), true);
