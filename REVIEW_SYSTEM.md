@@ -166,14 +166,14 @@ If you prefer a more robust real-time solution without managing a server, Fireba
    - In the Firebase console, set Firestore rules to restrict who can write or delete. Example for logged-in users only:
      ```
      rules_version = '2';
-     service cloud.firestore {
-       match /databases/{database}/documents {
-         match /reviews/{review} {
-           allow read: if true;
-           allow write: if request.auth != null; // only logged-in users
-         }
-       }
-     }
+    service cloud.firestore {
+    match /databases/{database}/documents {
+    match /reviews/{review} {
+      allow read: if true;            // <- must be present
+      allow write: if request.auth != null;
+    }
+  }
+}
      ```
    - Adjust the conditions to suit your needs (e.g. admin-only deletes, time limits, etc.).
 
