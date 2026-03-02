@@ -82,6 +82,9 @@
           ]
         }
         </script>
+
+
+        
           
     </head>
 
@@ -425,6 +428,42 @@
 
         <!-- Template Javascript -->
         <script src="js/main.js"></script>
+
+<script
+>
+        document.getElementById("reviewForm").addEventListener("submit", function(e) {
+  e.preventDefault();
+
+  const name = document.getElementById("name").value;
+  const profession = document.getElementById("profession").value;
+  const rating = document.getElementById("rating").value;
+  const review = document.getElementById("review").value;
+
+  const stars = "★".repeat(rating) + "☆".repeat(5 - rating);
+
+  const newReview = `
+    <div class="testimonial-item border p-4">
+      <div class="d-flex align-items-center">
+        <div class="ms-4">
+          <h4 class="text-secondary">${name}</h4>
+          <p class="m-0 pb-3">${profession}</p>
+          <div class="d-flex pe-5">${stars}</div>
+        </div>
+      </div>
+      <div class="border-top mt-4 pt-3">
+        <p class="mb-0">${review}</p>
+      </div>
+    </div>
+  `;
+
+  document.querySelector(".testimonial-carousel").innerHTML += newReview;
+
+  // Reset form
+  document.getElementById("reviewForm").reset();
+});
+
+</script>
+
     </body>
 
 </html>
