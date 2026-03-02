@@ -1,4 +1,58 @@
 // Review system shared across pages
+// Helper utilities for Firestore availability, local caching, and sync
+function isFirestoreAvailable() {
+  try {
+    if (!(window.firebase && firebase.firestore && db && typeof db.collection === 'function')) {
+      return false;
+    }
+    // try a lightweight operation to trigger any immediate errors
+    // (we'll ignore the returned value)
+    db.collection('reviews');
+    return true;
+  } catch (e) {
+    console.warn('Firestore not usable:', e);
+    return false;
+  }
+}
+
+function saveReviewLocally(review) {
+  const stored = JSON.parse(localStorage.getItem('localReviews') || '[]');
+  const id = 'local-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
+  stored.push({ id, ...review });
+  localStorage.setItem('localReviews', JSON.stringify(stored));
+  return Promise.resolve({ id });
+}
+
+function loadLocalReviews() {
+  const stored = JSON.parse(localStorage.getItem('localReviews') || '[]');
+  stored.forEach(r => addReviewToCarousel(r, r.id));
+  if (!carouselInitialized) setTimeout(reinitializeCarousel, 500);
+}
+
+function flushLocalReviews() {
+  if (!isFirestoreAvailable()) return Promise.resolve();
+  const stored = JSON.parse(localStorage.getItem('localReviews') || '[]');
+  if (!stored.length) return Promise.resolve();
+  const promises = stored.map(r => {
+    const copy = Object.assign({}, r);
+    delete copy.id;
+    copy.timestamp = firebase.firestore.FieldValue.serverTimestamp();
+    return db.collection('reviews').add(copy);
+  });
+  return Promise.all(promises).then(() => {
+    localStorage.removeItem('localReviews');
+    // remove any local-only carousel entries to avoid duplicates
+    document.querySelectorAll('.testimonial-item[data-id^="local-"]').forEach(el => el.remove());
+  });
+}
+
+window.addEventListener('online', () => {
+  console.log('Online again, attempting to sync local reviews');
+  flushLocalReviews().then(() => {
+    if (carouselInitialized) loadReviewsFromStorage();
+  }).catch(console.error);
+});
+
 let carouselInitialized = false;
 
 function initializeReviewSystem() {
@@ -65,27 +119,48 @@ function initializeReviewSystem() {
 }
 
 function saveReviewToStorage(review) {
+  if (!isFirestoreAvailable()) {
+    // no backend available, store locally
+    review.timestamp = Date.now();
+    alert('Review saved locally; it will sync when a connection becomes available.');
+    return saveReviewLocally(review);
+  }
   review.timestamp = firebase.firestore.FieldValue.serverTimestamp();
-  return db.collection('reviews').add(review);
+  return db.collection('reviews').add(review).catch(err => {
+    console.warn('Firestore write failed, falling back to local', err);
+    alert('Unable to reach the review server; your review was stored locally and will be sent when possible.');
+    review.timestamp = Date.now();
+    return saveReviewLocally(review);
+  });
 }
 
 function loadReviewsFromStorage() {
+  if (!isFirestoreAvailable()) {
+    console.warn('Firestore unavailable, loading from local storage');
+    loadLocalReviews();
+    return;
+  }
+
   db.collection('reviews').orderBy('timestamp').get()
     .then(snapshot => {
       snapshot.forEach(doc => addReviewToCarousel(doc.data(), doc.id));
-    }).catch(err => console.error('Error loading existing reviews:', err));
 
-  db.collection('reviews').orderBy('timestamp').onSnapshot(snapshot => {
-    snapshot.docChanges().forEach(change => {
-      if (change.type === 'added') {
-        if (!document.querySelector(`.testimonial-item[data-id="${change.doc.id}"]`)) {
-          addReviewToCarousel(change.doc.data(), change.doc.id);
-        }
-      } else if (change.type === 'removed') {
-        removeReview(change.doc.id);
-      }
+      // set up real-time listener only after initial load succeeds
+      db.collection('reviews').orderBy('timestamp').onSnapshot(snapshot => {
+        snapshot.docChanges().forEach(change => {
+          if (change.type === 'added') {
+            if (!document.querySelector(`.testimonial-item[data-id="${change.doc.id}"]`)) {
+              addReviewToCarousel(change.doc.data(), change.doc.id);
+            }
+          } else if (change.type === 'removed') {
+            removeReview(change.doc.id);
+          }
+        });
+      }, err => console.error('Error listening for review changes:', err));
+    }).catch(err => {
+      console.error('Error loading existing reviews (falling back to localStorage):', err);
+      loadLocalReviews();
     });
-  }, err => console.error('Error listening for review changes:', err));
 
   setTimeout(() => { if (!carouselInitialized) reinitializeCarousel(); }, 1000);
 }
@@ -120,7 +195,14 @@ function addReviewToCarousel(review, docId) {
 }
 
 function removeReview(id) {
-  db.collection('reviews').doc(id).delete();
+  if (isFirestoreAvailable() && !id.startsWith('local-')) {
+    db.collection('reviews').doc(id).delete().catch(console.error);
+  } else {
+    const stored = JSON.parse(localStorage.getItem('localReviews') || '[]')
+      .filter(r => r.id !== id);
+    localStorage.setItem('localReviews', JSON.stringify(stored));
+  }
+
   const item = document.querySelector(`.testimonial-item[data-id="${id}"]`);
   if (item) item.parentElement.removeChild(item);
   setTimeout(reinitializeCarousel, 200);
@@ -141,4 +223,16 @@ function reinitializeCarousel() {
   carouselInitialized = true;
 }
 
-document.addEventListener('DOMContentLoaded', function(){ setTimeout(function(){ initializeReviewSystem(); loadReviewsFromStorage(); }, 500); });
+document.addEventListener('DOMContentLoaded', function(){
+  setTimeout(function(){
+    initializeReviewSystem();
+    if (isFirestoreAvailable()) {
+      flushLocalReviews().then(loadReviewsFromStorage).catch(err => {
+        console.error('Error flushing local reviews on startup', err);
+        loadReviewsFromStorage();
+      });
+    } else {
+      loadReviewsFromStorage();
+    }
+  }, 500);
+});
