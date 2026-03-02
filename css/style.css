@@ -825,4 +825,15 @@ button:hover {
     transform: scale(1.05);
 }
 
+.remove-review {
+    font-size: 18px;
+    opacity: 0.6;
+    transition: opacity 0.2s ease;
+}
+
+.remove-review:hover {
+    opacity: 1;
+    color: #dc3545;
+}
+
 /*** Review System End ***/
