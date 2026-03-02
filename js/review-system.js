@@ -124,11 +124,17 @@ function addReviewToCarousel(review, docId) {
     `;
     carousel.insertAdjacentHTML('beforeend', reviewHTML);
     // attach delete handler
-    const added = carousel.querySelector(`.testimonial-item[data-ts="${review.timestamp}"]`);
+    const added = carousel.querySelector(`.testimonial-item[data-id="${docId}"]`);
     if (added) {
         const btn = added.querySelector('.remove-review');
         if (btn) {
-            btn.addEventListener('click', function() {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const id = this.getAttribute('data-id');
+                removeReview(id);
+            });
+        }
+    }
     // reinitialize carousel to include new item
     if (carouselInitialized) {
         reinitializeCarousel();

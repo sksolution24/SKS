@@ -91,6 +91,23 @@
     <link rel="stylesheet" 
           href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
 
+        <!-- Firebase SDK -->
+        <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+        <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyCKpx3VNMT8YHraGBKVOKNPw5s8MHo7eUk",
+            authDomain: "review-system-839a5.firebaseapp.com",
+            projectId: "review-system-839a5",
+            storageBucket: "review-system-839a5.appspot.com",
+            messagingSenderId: "616667596684",
+            appId: "1:616667596684:web:f151d5fa7f3d001df4b8a9"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        </script>
+
     </head>
 
     <body>
