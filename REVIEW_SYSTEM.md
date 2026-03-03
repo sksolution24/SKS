@@ -101,84 +101,14 @@ You can use a Google Sheet as a lightweight shared datastore by exposing it via 
 
 After implementing either method, update the `saveReviewToStorage`/`loadReviewsFromStorage` functions in `review-system.js` to call the sheet API instead of `localStorage`.  Replace the current storage section of the docs with this information.
 
-### Using Firebase as the Backend
-If you prefer a more robust real-time solution without managing a server, Firebase is a great choice. Here's how to adapt the review system:
+**The review system has been removed from this project.**
 
-1. **Create a Firebase Project:**
-   - Go to the [Firebase console](https://console.firebase.google.com) and create a new project.
-   - Enable **Firestore** (or Realtime Database) in test mode for rapid prototyping.
+All code and configuration relating to customer testimonials and Firebase/Firestore
+has been deleted. This document is retained for historical reference only; the
+feature is no longer active.
 
-2. **Add Firebase SDK to HTML pages:**
-   ```html
-   <!-- Add these before other scripts -->
-   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-   <script>
-     const firebaseConfig = {
-       apiKey: "...",
-       authDomain: "...",
-       projectId: "...",
-       // other values from your console
-     };
-     firebase.initializeApp(firebaseConfig);
-     const db = firebase.firestore();
-   </script>
-   ```
-
-3. **Modify storage functions in `review-system.js`:**
-   ```js
-   function saveReviewToStorage(review) {
-     // return promise for chaining
-     return db.collection('reviews').add(review);
-   }
-
-   function loadReviewsFromStorage() {
-     // realtime listener
-     db.collection('reviews').orderBy('timestamp')
-       .onSnapshot(snapshot => {
-         // clear existing carousel items first if desired
-         snapshot.docChanges().forEach(change => {
-           if (change.type === 'added') {
-             addReviewToCarousel(change.doc.data());
-           } else if (change.type === 'removed') {
-             // remove from DOM using timestamp or id
-             removeReview(change.doc.id);
-           }
-         });
-       });
-   }
-   ```
-   - Store `review.timestamp` as a Firestore field. You may also store `id` using `doc.id` if needed.
-
-4. **Handle deletion:**
-   ```js
-   function removeReview(id) {
-     db.collection('reviews').doc(id).delete();
-   }
-   ```
-   - Update `addReviewToCarousel` to save the document ID in the element (e.g. `data-id="${reviewId}"`).
-
-5. **Realtime updates:**
-   - Because the listener is active, any new review submitted from any client will pop into every open page automatically without reload.
-   - Deletions propagate as well.
-
-6. **Security rules (important before production):**
-   - In the Firebase console, set Firestore rules to restrict who can write or delete. Example for logged-in users only:
-     ```
-     rules_version = '2';
-    service cloud.firestore {
-    match /databases/{database}/documents {
-    match /reviews/{review} {
-      allow read: if true;            // <- must be present
-      allow write: if request.auth != null;
-    }
-  }
-}
-     ```
-   - Adjust the conditions to suit your needs (e.g. admin-only deletes, time limits, etc.).
-
-This Firebase setup provides a scalable, instant synchronization layer so that all visitors—across devices and tabs—see submitted reviews in real time.
-
+If you choose to reintroduce reviews in future, you may refer to earlier commits
+for implementation details or write a new system from scratch.
 ### Offline & local-storage fallback
 If Firestore is unreachable (for example the project has not been configured yet, the database is disabled, or the user is offline), the JavaScript automatically falls back to using the browser's `localStorage`. Reviews are stored under the key `localReviews` and are immediately added to the carousel. When a network connection is restored and Firestore becomes available again, the script will attempt to flush any locally‑saved reviews to the database and then clear the cache, ensuring they propagate to all clients.
 
