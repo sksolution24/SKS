@@ -182,7 +182,7 @@ This Firebase setup provides a scalable, instant synchronization layer so that a
 ### Offline & local-storage fallback
 If Firestore is unreachable (for example the project has not been configured yet, the database is disabled, or the user is offline), the JavaScript automatically falls back to using the browser's `localStorage`. Reviews are stored under the key `localReviews` and are immediately added to the carousel. When a network connection is restored and Firestore becomes available again, the script will attempt to flush any locally‑saved reviews to the database and then clear the cache, ensuring they propagate to all clients.
 
-You do *not* need to change any of your HTML; simply keep `firebase.initializeApp(...)` in place on each page. The fallback behavior is built into `review-system-fixed.js` and makes the system resilient during development or intermittent connectivity.
+You do *not* need to change any of your HTML; simply keep `firebase.initializeApp(...)` in place on each page. The fallback behavior is built into `review-system.js` and makes the system resilient during development or intermittent connectivity.
 
 ### To Change Default Avatar:
 Update the image path in the `addReviewToCarousel()` function:

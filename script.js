@@ -1,10 +1,9 @@
-// legacy script.js review handlers have been disabled because the new
-// review-system-fixed.js implementation handles everything (including
-// offline/localStorage fallback and Firebase integration).
-// The old PHP endpoints (submit-review.php, get-reviews.php) are no longer
-// used and produced 405 errors in the console.
+// legacy review code removed – the functionality now lives entirely in
+// js/review-system.js (which includes offline/localStorage fallback,
+// Firebase support, and carousel handling). Any old PHP endpoints are no
+// longer used.
 
-console.log('script.js loaded but no longer active; review handling moved to review-system-fixed.js');
+console.log('script.js loaded; no active behavior in this file');
 
-// Load reviews on page load
-window.onload = loadReviews;
+// (no loadReviews call) -- review initialization occurs via
+// review-system.js on DOMContentLoaded.
