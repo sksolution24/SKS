@@ -11,7 +11,7 @@ SKS Solution is a leading provider of IT services in Delhi NCR, specializing in 
 ## Things to Remember
 - **Website:** https://securitysolution.in
 - **Address:** Delhi, India
-- **Contact:** info@securitysolution.in
+- **Contact:** secsolutions24@gmail.com
 - **Phone:** Not Available
 - **Hours:** Mon-Fri: 9AM-5PM
 - **Timezone:** Asia/Kolkata
@@ -53,10 +53,10 @@ PHP, JavaScript, MySQL, Linux, Cisco Networking
 
 
 ## Social Media
-- Linkedin: https://www.linkedin.com/company/yourcompany
-- Twitter: https://twitter.com/yourhandle
-- Facebook: https://www.facebook.com/yourpage
-- Instagram: https://www.instagram.com/yourprofile
+- Linkedin: https://www.linkedin.com/company/skssolution24
+- Twitter: https://twitter.com/skssolution24
+- Facebook: https://www.facebook.com/skssolution24
+- Instagram: https://www.instagram.com/skssolution24
 
 ## Blog & Resources
 undefined
