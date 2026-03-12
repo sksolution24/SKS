@@ -104,7 +104,24 @@
     });
 
 
- 
+ // clickjacking prevention
+
+ addEventListener("fetch", event => {
+  event.respondWith(handleRequest(event.request))
+})
+
+async function handleRequest(request) {
+  let response = await fetch(request)
+  let newHeaders = new Headers(response.headers)
+  newHeaders.set("X-Frame-Options", "DENY")
+  newHeaders.set("Content-Security-Policy", "frame-ancestors 'none'")
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers: newHeaders
+  })
+}
+
 
 
 })(jQuery);
