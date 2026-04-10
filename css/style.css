@@ -859,3 +859,12 @@ body::before {
     pointer-events: none; /* Allow interaction with content */
 }
 /*** Page Background Logo End ***/
+
+/* Add to CSS AVATAR */
+.avatar {
+  width: 56px; height: 56px; border-radius: 50%;
+  background: #EEEDFE; color: #3C3489;
+  display: flex; align-items: center;
+  justify-content: center;
+  font-weight: 500; font-size: 16px;
+}
